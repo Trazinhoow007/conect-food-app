@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conect Food</title>
+    
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#212529"/>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .card-home {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .card-home:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .table {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" style="display: none;">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" href="#" onclick="showPage('home')"><i class="fas fa-utensils me-2"></i>Conect Food</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPage('produtos')"><i class="fas fa-box me-1"></i>Produtos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPage('comandas')"><i class="fas fa-receipt me-1"></i>Comandas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPage('consumo')"><i class="fas fa-plus-circle me-1"></i>Registrar Consumo</a>
+                        </li>
+                        <li class="nav-item admin-only">
+                             <a class="nav-link" href="#" onclick="showPage('vendaTicket')"><i class="fas fa-ticket-alt me-1"></i>Venda Rápida</a>
+                        </li>
+                         <li class="nav-item admin-only">
+                            <a class="nav-link" href="#" onclick="showPage('relatorios')"><i class="fas fa-chart-line me-1"></i>Relatórios</a>
+                        </li>
+                        <li class="nav-item admin-only">
+                            <a class="nav-link" href="#" onclick="showPage('adminUsers')"><i class="fas fa-users-cog me-1"></i>Gerenciar Usuários</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <span class="nav-link text-white" id="nav-username"></span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i>Sair</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container mt-4">
+             <div id="global-alert" class="position-fixed top-0 end-0 p-3" style="z-index: 1055"></div>
+            <!-- Login Page -->
+            <div id="login-page" class="page active">
+                <div class="d-flex justify-content-center align-items-center min-vh-100">
+                    <div class="bg-white p-5 rounded shadow-lg" style="width: 100%; max-width: 450px;">
+                        <div class="text-center mb-4">
+                             <i class="fas fa-utensils fa-3x text-primary"></i>
+                            <h2 class="mt-2">Conect Food</h2>
+                        </div>
+                        <div id="login-alert"></div>
+                        <form id="login-form">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuário</label>
+                                <input type="text" class="form-control" id="username" value="admin" required autofocus>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Senha</label>
+                                <input type="password" class="form-control" id="password" value="admin" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mt-3">Entrar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Page -->
+            <div id="home-page" class="page">
+                <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+                    <div class="container-fluid py-5">
+                        <h1 class="display-5 fw-bold">Bem-vindo ao Conect Food!</h1>
+                        <p class="col-md-8 fs-4">Gerencie seus produtos, comandas e consumos de forma eficiente e em tempo real.</p>
+                    </div>
+                </div>
+                <div class="row align-items-md-stretch">
+                    <div class="col-md-4 mb-4">
+                         <div class="card card-home h-100 text-center">
+                            <div class="card-body">
+                                <i class="fas fa-box fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">Produtos</h5>
+                                <p class="card-text">Adicione, edite e gerencie seu estoque de produtos.</p>
+                                <a href="#" onclick="showPage('produtos')" class="btn btn-outline-primary">Ir para Produtos</a>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-4 mb-4">
+                         <div class="card card-home h-100 text-center">
+                            <div class="card-body">
+                               <i class="fas fa-receipt fa-3x text-success mb-3"></i>
+                                <h5 class="card-title">Comandas</h5>
+                                <p class="card-text">Crie, edite e visualize o saldo das comandas.</p>
+                                <a href="#" onclick="showPage('comandas')" class="btn btn-outline-success">Ir para Comandas</a>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-4 mb-4">
+                         <div class="card card-home h-100 text-center">
+                            <div class="card-body">
+                               <i class="fas fa-plus-circle fa-3x text-info mb-3"></i>
+                                <h5 class="card-title">Registrar Consumo</h5>
+                                <p class="card-text">Lance produtos nas comandas e atualize saldos.</p>
+                                <a href="#" onclick="showPage('consumo')" class="btn btn-outline-info">Ir para Consumo</a>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-4 mb-4 admin-only">
+                         <div class="card card-home h-100 text-center">
+                            <div class="card-body">
+                               <i class="fas fa-ticket-alt fa-3x text-danger mb-3"></i>
+                                <h5 class="card-title">Venda Rápida</h5>
+                                <p class="card-text">Imprima tickets e dê baixa no estoque.</p>
+                                <a href="#" onclick="showPage('vendaTicket')" class="btn btn-outline-danger">Vender / Imprimir</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4 admin-only">
+                         <div class="card card-home h-100 text-center">
+                            <div class="card-body">
+                               <i class="fas fa-chart-line fa-3x text-purple mb-3"></i>
+                                <h5 class="card-title">Relatórios</h5>
+                                <p class="card-text">Consulte o histórico e o faturamento das vendas.</p>
+                                <a href="#" onclick="showPage('relatorios')" class="btn btn-outline-purple">Ver Relatórios</a>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="col-md-4 mb-4 admin-only">
+                         <div class="card card-home h-100 text-center">
+                            <div class="card-body">
+                               <i class="fas fa-users-cog fa-3x text-warning mb-3"></i>
+                                <h5 class="card-title">Gerenciar Usuários</h5>
+                                <p class="card-text">Adicione, edite e remova usuários do sistema.</p>
+                                <a href="#" onclick="showPage('adminUsers')" class="btn btn-outline-warning">Gerenciar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Relatórios Page -->
+            <div id="relatorios-page" class="page">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-chart-line me-2"></i>Relatórios de Vendas</h1>
+                </div>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Filtrar por Período</h5>
+                        <form id="relatorio-form" class="row g-3 align-items-end">
+                            <div class="col-md-5">
+                                <label for="relatorio-start-date" class="form-label">Data de Início</label>
+                                <input type="date" class="form-control" id="relatorio-start-date">
+                            </div>
+                            <div class="col-md-5">
+                                <label for="relatorio-end-date" class="form-label">Data de Fim</label>
+                                <input type="date" class="form-control" id="relatorio-end-date">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Gerar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="relatorio-results" style="display: none;">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card text-center bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">FATURAMENTO TOTAL</h6>
+                                    <p class="card-text fs-4 fw-bold" id="relatorio-faturamento"></p>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="col-md-4">
+                            <div class="card text-center bg-info text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">ITENS VENDIDOS</h6>
+                                    <p class="card-text fs-4 fw-bold" id="relatorio-itens-vendidos"></p>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="col-md-4">
+                            <div class="card text-center bg-warning text-dark">
+                                <div class="card-body">
+                                    <h6 class="card-title">Nº DE VENDAS</h6>
+                                    <p class="card-text fs-4 fw-bold" id="relatorio-num-vendas"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="mt-5 mb-3">Produtos Mais Vendidos</h3>
+                    <div class="table-responsive mb-5">
+                         <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Quantidade Vendida</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatorio-top-produtos"></tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="mt-5 mb-3">Extrato de Vendas do Período</h3>
+                     <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Tipo</th>
+                                    <th>Produto</th>
+                                    <th>Qtd.</th>
+                                    <th>Valor Total</th>
+                                    <th>Detalhe</th>
+                                </tr>
+                            </thead>
+                            <tbody id="relatorio-extrato-vendas"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Venda Rápida / Ticket Page -->
+            <div id="vendaTicket-page" class="page">
+                 <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-ticket-alt me-2"></i>Venda Rápida / Imprimir Ticket</h1>
+                </div>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                         <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="fas fa-info-circle"></i> Como funciona?</h5>
+                            <p>Selecione um produto e a quantidade para imprimir um ticket e dar baixa no estoque. A impressão será feita via Bluetooth.</p>
+                            <hr>
+                            <p class="mb-0">Requisitos: Impressora térmica Bluetooth LE e navegador compatível (Chrome/Edge).</p>
+                        </div>
+                        <form id="venda-ticket-form">
+                             <div class="mb-3">
+                                <label for="ticket-produto" class="form-label">Produto</label>
+                                <select class="form-select" id="ticket-produto" required></select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ticket-quantidade" class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" id="ticket-quantidade" value="1" min="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-print me-2"></i>Imprimir Ticket e Vender
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                 <h2 class="mt-5 mb-3">Últimas Vendas Rápidas</h2>
+                 <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produto</th>
+                                <th>Quantidade</th>
+                                <th>Valor Total</th>
+                                <th>Data/Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendas-ticket-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Consumo Page -->
+            <div id="consumo-page" class="page">
+                 <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-plus-circle me-2"></i>Registrar Consumo</h1>
+                </div>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form id="consumo-form">
+                            <div class="mb-3">
+                                <label for="consumo-comanda" class="form-label">Comanda</label>
+                                <select class="form-select" id="consumo-comanda" required></select>
+                            </div>
+                             <div class="mb-3">
+                                <label for="consumo-produto" class="form-label">Produto</label>
+                                <select class="form-select" id="consumo-produto" required></select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="consumo-quantidade" class="form-label">Quantidade</label>
+                                <input type="number" class="form-control" id="consumo-quantidade" value="1" min="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Registrar</button>
+                        </form>
+                    </div>
+                </div>
+                 <h2 class="mt-5 mb-3">Últimos Consumos</h2>
+                 <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Comanda</th>
+                                <th>Cliente</th>
+                                <th>Produto</th>
+                                <th>Quantidade</th>
+                                <th>Valor Total</th>
+                                <th>Data/Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consumos-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- Produtos Page -->
+            <div id="produtos-page" class="page">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-box me-2"></i>Produtos</h1>
+                    <button type="button" class="btn btn-primary admin-only" data-bs-toggle="modal" data-bs-target="#produtoModal">
+                        <i class="fas fa-plus me-1"></i> Adicionar Produto
+                    </button>
+                </div>
+                <form class="d-flex mb-4" role="search" id="search-produto-form">
+                    <input class="form-control me-2" type="search" placeholder="Buscar produto..." aria-label="Search" id="search-produto-input">
+                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                </form>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Preço</th>
+                                <th>Estoque</th>
+                                <th>Atualizado Em</th>
+                                <th class="admin-only">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtos-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Comandas Page -->
+            <div id="comandas-page" class="page">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-receipt me-2"></i>Comandas</h1>
+                    <button type="button" class="btn btn-primary admin-only" data-bs-toggle="modal" data-bs-target="#comandaModal">
+                        <i class="fas fa-plus me-1"></i> Adicionar Comanda
+                    </button>
+                </div>
+                <form class="d-flex mb-4" role="search" id="search-comanda-form">
+                    <input class="form-control me-2" type="search" placeholder="Buscar por número ou cliente..." aria-label="Search" id="search-comanda-input">
+                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                </form>
+                 <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Saldo</th>
+                                <th>Atualizado Em</th>
+                                <th class="admin-only">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comandas-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Admin Users Page -->
+            <div id="adminUsers-page" class="page">
+                 <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-users-cog me-2"></i>Gerenciar Usuários</h1>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">
+                       <i class="fas fa-user-plus me-1"></i> Adicionar Usuário
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuário</th>
+                                <th>Função</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar/Editar Produto -->
+    <div class="modal fade" id="produtoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="produtoModalLabel">Adicionar Produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="produto-form">
+                        <input type="hidden" id="edit-produto-id">
+                        <div class="mb-3">
+                            <label for="produto-nome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="produto-nome" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="produto-preco" class="form-label">Preço</label>
+                            <input type="number" step="0.01" class="form-control" id="produto-preco" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="produto-estoque" class="form-label">Estoque</label>
+                            <input type="number" class="form-control" id="produto-estoque" value="0" required>
+                        </div>
+                         <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Adicionar/Editar Comanda -->
+    <div class="modal fade" id="comandaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="comandaModalLabel">Adicionar Comanda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="comanda-form">
+                         <input type="hidden" id="edit-comanda-id">
+                        <div class="mb-3">
+                            <label for="comanda-numero" class="form-label">Número</label>
+                            <input type="number" class="form-control" id="comanda-numero" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comanda-cliente" class="form-label">Nome do Cliente</label>
+                            <input type="text" class="form-control" id="comanda-cliente">
+                        </div>
+                        <div class="mb-3">
+                            <label for="comanda-saldo" class="form-label">Saldo</label>
+                            <input type="number" step="0.01" class="form-control" id="comanda-saldo" value="0.00" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para Adicionar/Editar Usuário -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Adicionar Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="user-form">
+                        <input type="hidden" id="edit-user-id">
+                        <div class="mb-3">
+                            <label for="user-username" class="form-label">Nome de Usuário</label>
+                            <input type="text" class="form-control" id="user-username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="user-password" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="user-password">
+                            <small class="form-text text-muted">Deixe em branco para não alterar a senha ao editar.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="user-role" class="form-label">Função</label>
+                            <select class="form-select" id="user-role">
+                                <option value="user">Usuário Comum</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                         <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- OFFLINE DATA STORE ---
+        let users = [
+            { id: 1, username: 'admin', password: 'admin', role: 'admin' },
+            { id: 2, username: 'user', password: 'user', role: 'user' }
+        ];
+        let produtos = [
+            { id: 1, nome: 'Coca-Cola 350ml', preco: 5.50, estoque: 48, updated_at: new Date().toISOString() },
+            { id: 2, nome: 'X-Salada Especial', preco: 22.00, estoque: 15, updated_at: new Date().toISOString() },
+            { id: 3, nome: 'Porção de Batata Frita (M)', preco: 18.00, estoque: 25, updated_at: new Date().toISOString() }
+        ];
+        let comandas = [
+            { id: 1, numero: 101, cliente: 'João Silva', saldo: 50.75, updated_at: new Date().toISOString() },
+            { id: 2, numero: 102, cliente: 'Mesa 04', saldo: 0.00, updated_at: new Date().toISOString() },
+            { id: 3, numero: 103, cliente: 'Maria', saldo: 120.00, updated_at: new Date().toISOString() }
+        ];
+        let consumos = [];
+        let vendasTicket = [];
+        let currentUser = null;
+        
+        const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+        const produtoModal = new bootstrap.Modal(document.getElementById('produtoModal'));
+        const comandaModal = new bootstrap.Modal(document.getElementById('comandaModal'));
+
+        function showAlert(message, type = 'success') {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = [
+                `<div class="toast align-items-center text-white bg-${type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">`,
+                '  <div class="d-flex">',
+                `    <div class="toast-body">${message}</div>`,
+                '    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>',
+                '  </div>',
+                '</div>'
+            ].join('');
+            document.getElementById('global-alert').append(wrapper);
+            setTimeout(() => wrapper.remove(), 4000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString('pt-BR');
+        }
+        
+         function formatDateToISO(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(`${pageId}-page`).classList.add('active');
+            
+            const navLink = document.querySelector(`.nav-link[onclick="showPage('${pageId}')"]`);
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            if(navLink) navLink.classList.add('active');
+
+            // Refresh data on page view
+            if (pageId === 'produtos') renderProdutos();
+            else if (pageId === 'comandas') renderComandas();
+            else if (pageId === 'adminUsers') renderUsers();
+            else if (pageId === 'consumo') renderConsumoPage();
+            else if (pageId === 'vendaTicket') renderVendaTicketPage();
+            else if (pageId === 'relatorios') renderRelatoriosPage();
+        }
+
+        document.getElementById('login-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                document.querySelector('.navbar').style.display = 'flex';
+                document.getElementById('nav-username').textContent = `Olá, ${currentUser.username}`;
+                toggleAdminElements();
+                showPage('home');
+                showAlert(`Bem-vindo, ${currentUser.username}!`, 'success');
+            } else {
+                 document.getElementById('login-alert').innerHTML = `<div class="alert alert-danger">Usuário ou senha inválidos.</div>`;
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            document.querySelector('.navbar').style.display = 'none';
+            showPage('login');
+            document.getElementById('login-form').reset();
+            document.getElementById('login-alert').innerHTML = '';
+        }
+        
+        function toggleAdminElements() {
+            if (!currentUser) return;
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = (currentUser.role === 'admin') ? '' : 'none';
+            });
+        }
+        
+        // --- RENDER FUNCTIONS ---
+        function renderProdutos(query = '') {
+            const tableBody = document.getElementById('produtos-table-body');
+            tableBody.innerHTML = '';
+            const filtered = produtos.filter(p => p.nome.toLowerCase().includes(query.toLowerCase()));
+            if (filtered.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum produto encontrado.</td></tr>';
+                return;
+            }
+            filtered.sort((a,b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                tableBody.innerHTML += `
+                    <tr id="produto-row-${p.id}">
+                        <td>${p.id}</td>
+                        <td>${p.nome}</td>
+                        <td>R$ ${p.preco.toFixed(2)}</td>
+                        <td class="produto-estoque">${p.estoque}</td>
+                        <td>${formatDate(p.updated_at)}</td>
+                        <td class="admin-only">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openEditProdutoModal(${p.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('produto', ${p.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            toggleAdminElements();
+        }
+        
+        function renderComandas(query = '') {
+            const tableBody = document.getElementById('comandas-table-body');
+            tableBody.innerHTML = '';
+            const filtered = comandas.filter(c => 
+                c.numero.toString().includes(query) || 
+                (c.cliente && c.cliente.toLowerCase().includes(query.toLowerCase()))
+            );
+             if (filtered.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma comanda encontrada.</td></tr>';
+                return;
+            }
+            filtered.sort((a,b) => a.numero - b.numero).forEach(c => {
+                tableBody.innerHTML += `
+                    <tr id="comanda-row-${c.id}">
+                        <td>${c.id}</td>
+                        <td>${c.numero}</td>
+                        <td>${c.cliente || 'N/A'}</td>
+                        <td class="comanda-saldo">R$ ${c.saldo.toFixed(2)}</td>
+                        <td>${formatDate(c.updated_at)}</td>
+                         <td class="admin-only">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openEditComandaModal(${c.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('comanda', ${c.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            toggleAdminElements();
+        }
+        
+        function renderUsers() {
+            const tableBody = document.getElementById('users-table-body');
+            tableBody.innerHTML = '';
+            users.sort((a,b) => a.username.localeCompare(b.username)).forEach(user => {
+                 tableBody.innerHTML += `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.role}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="openEditUserModal(${user.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" ${user.id === currentUser.id ? 'disabled' : ''} onclick="deleteItem('user', ${user.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+        
+        function renderConsumoPage() {
+            const comandaSelect = document.getElementById('consumo-comanda');
+            const produtoSelect = document.getElementById('consumo-produto');
+            comandaSelect.innerHTML = '<option value="">Selecione uma comanda</option>';
+            produtoSelect.innerHTML = '<option value="">Selecione um produto</option>';
+
+            comandas.sort((a,b) => a.numero - b.numero).forEach(c => {
+                comandaSelect.innerHTML += `<option value="${c.id}">Comanda ${c.numero} (${c.cliente || 'Sem nome'}) - Saldo: R$ ${c.saldo.toFixed(2)}</option>`;
+            });
+            produtos.sort((a,b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                produtoSelect.innerHTML += `<option value="${p.id}" ${p.estoque === 0 ? 'disabled' : ''}>${p.nome} (Preço: R$ ${p.preco.toFixed(2)}, Estoque: ${p.estoque})</option>`;
+            });
+            renderConsumosTable();
+        }
+        
+        function renderConsumosTable() {
+            const tableBody = document.getElementById('consumos-table-body');
+            tableBody.innerHTML = '';
+            consumos.slice().reverse().slice(0, 10).forEach(c => {
+                 const produto = produtos.find(p => p.id === c.produto_id) || { nome: 'N/A' };
+                 const comanda = comandas.find(cmd => cmd.id === c.comanda_id) || { numero: 'N/A', cliente: 'N/A' };
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${comanda.numero}</td>
+                        <td>${comanda.cliente || 'N/A'}</td>
+                        <td>${produto.nome}</td>
+                        <td>${c.quantidade}</td>
+                        <td>R$ ${c.valor_total.toFixed(2)}</td>
+                        <td>${formatDate(c.created_at)}</td>
+                    </tr>`;
+            });
+        }
+        
+        function renderVendaTicketPage() {
+            const produtoSelect = document.getElementById('ticket-produto');
+            produtoSelect.innerHTML = '<option value="">Selecione um produto</option>';
+            produtos.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(p => {
+                produtoSelect.innerHTML += `<option value="${p.id}" ${p.estoque === 0 ? 'disabled' : ''}>${p.nome} (Estoque: ${p.estoque})</option>`;
+            });
+            renderVendasTicketTable();
+        }
+
+        function renderVendasTicketTable() {
+            const tableBody = document.getElementById('vendas-ticket-table-body');
+            tableBody.innerHTML = '';
+            vendasTicket.slice().reverse().slice(0, 10).forEach(v => {
+                const produto = produtos.find(p => p.id === v.produto_id) || { nome: 'N/A' };
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>${produto.nome}</td>
+                        <td>${v.quantidade}</td>
+                        <td>R$ ${v.valor_total.toFixed(2)}</td>
+                        <td>${formatDate(v.created_at)}</td>
+                    </tr>`;
+            });
+        }
+        
+        function renderRelatoriosPage() {
+            const hoje = new Date();
+            const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            document.getElementById('relatorio-start-date').value = formatDateToISO(primeiroDiaDoMes);
+            document.getElementById('relatorio-end-date').value = formatDateToISO(hoje);
+            document.getElementById('relatorio-results').style.display = 'none';
+        }
+        
+        // --- FORM SUBMISSIONS & DATA MANIPULATION ---
+
+        document.getElementById('produto-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('edit-produto-id').value);
+            const newProduto = {
+                nome: document.getElementById('produto-nome').value,
+                preco: parseFloat(document.getElementById('produto-preco').value),
+                estoque: parseInt(document.getElementById('produto-estoque').value),
+                updated_at: new Date().toISOString()
+            };
+
+            if (id) { // Edit
+                const index = produtos.findIndex(p => p.id === id);
+                produtos[index] = { ...produtos[index], ...newProduto };
+                showAlert('Produto atualizado!');
+            } else { // Add
+                newProduto.id = produtos.length > 0 ? Math.max(...produtos.map(p => p.id)) + 1 : 1;
+                produtos.push(newProduto);
+                showAlert('Produto adicionado!');
+            }
+            renderProdutos();
+            produtoModal.hide();
+        });
+
+        document.getElementById('comanda-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('edit-comanda-id').value);
+            const numero = parseInt(document.getElementById('comanda-numero').value);
+
+            if (comandas.some(c => c.numero === numero && c.id !== id)) {
+                showAlert('Número de comanda já existe.', 'danger');
+                return;
+            }
+
+            const newComanda = {
+                numero: numero,
+                cliente: document.getElementById('comanda-cliente').value,
+                saldo: parseFloat(document.getElementById('comanda-saldo').value),
+                updated_at: new Date().toISOString()
+            };
+
+            if (id) { // Edit
+                const index = comandas.findIndex(c => c.id === id);
+                comandas[index] = { ...comandas[index], ...newComanda };
+                showAlert('Comanda atualizada!');
+            } else { // Add
+                newComanda.id = comandas.length > 0 ? Math.max(...comandas.map(c => c.id)) + 1 : 1;
+                comandas.push(newComanda);
+                showAlert('Comanda adicionada!');
+            }
+            renderComandas();
+            comandaModal.hide();
+        });
+        
+         document.getElementById('user-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('edit-user-id').value);
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+
+             if (users.some(u => u.username === username && u.id !== id)) {
+                showAlert('Nome de usuário já existe.', 'danger');
+                return;
+            }
+
+            const newUser = {
+                username: username,
+                role: document.getElementById('user-role').value
+            };
+            
+            if (password) {
+                newUser.password = password;
+            }
+
+            if (id) { // Edit
+                const index = users.findIndex(u => u.id === id);
+                users[index] = { ...users[index], ...newUser };
+                showAlert('Usuário atualizado!');
+            } else { // Add
+                if(!password) {
+                    showAlert('Senha é obrigatória para novos usuários.', 'danger');
+                    return;
+                }
+                newUser.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+                users.push(newUser);
+                showAlert('Usuário adicionado!');
+            }
+            renderUsers();
+            userModal.hide();
+        });
+
+        document.getElementById('consumo-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const comandaId = parseInt(document.getElementById('consumo-comanda').value);
+            const produtoId = parseInt(document.getElementById('consumo-produto').value);
+            const quantidade = parseInt(document.getElementById('consumo-quantidade').value);
+            
+            const comanda = comandas.find(c => c.id === comandaId);
+            const produto = produtos.find(p => p.id === produtoId);
+            
+            if(!comanda || !produto) {
+                showAlert('Comanda ou produto inválido.', 'danger');
+                return;
+            }
+
+            const total = produto.preco * quantidade;
+            
+            if (produto.estoque < quantidade) {
+                showAlert(`Estoque insuficiente! Disponível: ${produto.estoque}`, 'danger');
+                return;
+            }
+            if (comanda.saldo < total) {
+                 showAlert(`Saldo insuficiente! Disponível: R$ ${comanda.saldo.toFixed(2)}`, 'danger');
+                return;
+            }
+            
+            produto.estoque -= quantidade;
+            comanda.saldo -= total;
+            produto.updated_at = new Date().toISOString();
+            comanda.updated_at = new Date().toISOString();
+            
+            const consumo = {
+                id: consumos.length > 0 ? Math.max(...consumos.map(c => c.id)) + 1 : 1,
+                comanda_id: comandaId,
+                produto_id: produtoId,
+                quantidade: quantidade,
+                valor_total: total,
+                created_at: new Date().toISOString()
+            };
+            consumos.push(consumo);
+            
+            showAlert('Consumo registrado!');
+            this.reset();
+            renderConsumoPage(); // Refresh selects and table
+        });
+        
+        document.getElementById('venda-ticket-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const produtoId = parseInt(document.getElementById('ticket-produto').value);
+            const quantidade = parseInt(document.getElementById('ticket-quantidade').value);
+            const produto = produtos.find(p => p.id === produtoId);
+
+            if (!produto) {
+                showAlert('Produto inválido.', 'danger');
+                return;
+            }
+             if (produto.estoque < quantidade) {
+                showAlert(`Estoque insuficiente! Disponível: ${produto.estoque}`, 'danger');
+                return;
+            }
+
+            // Diminui o estoque
+            produto.estoque -= quantidade;
+            produto.updated_at = new Date().toISOString();
+            
+            const venda = {
+                id: vendasTicket.length > 0 ? Math.max(...vendasTicket.map(v => v.id)) + 1 : 1,
+                produto_id: produtoId,
+                quantidade: quantidade,
+                valor_total: produto.preco * quantidade,
+                created_at: new Date().toISOString()
+            };
+            vendasTicket.push(venda);
+
+            // Prepara o texto do ticket e chama a função de impressão
+            const ticketText = `
+        CONECT FOOD
+--------------------------
+VENDA DIRETA
+Data: ${formatDate(venda.created_at)}
+
+Produto: ${produto.nome}
+Qtd: ${venda.quantidade}
+Preco Uni.: R$ ${produto.preco.toFixed(2)}
+--------------------------
+Total: R$ ${venda.valor_total.toFixed(2)}
+
+Obrigado!
+`;
+            printViaBluetooth(ticketText);
+            
+            showAlert('Venda registrada e ticket enviado para impressão!');
+            this.reset();
+            renderVendaTicketPage();
+        });
+        
+         document.getElementById('relatorio-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            calculateAndDisplayReports();
+        });
+
+
+        async function deleteItem(type, id) {
+            if (!confirm(`Tem certeza que deseja deletar este item?`)) return;
+            
+            if (type === 'produto') {
+                produtos = produtos.filter(p => p.id !== id);
+                renderProdutos();
+            } else if (type === 'comanda') {
+                comandas = comandas.filter(c => c.id !== id);
+                renderComandas();
+            } else if (type === 'user') {
+                users = users.filter(u => u.id !== id);
+                renderUsers();
+            }
+            showAlert('Item deletado!');
+        }
+        
+        function calculateAndDisplayReports() {
+            const startDateInput = document.getElementById('relatorio-start-date').value;
+            const endDateInput = document.getElementById('relatorio-end-date').value;
+            
+            if(!startDateInput || !endDateInput) {
+                showAlert('Por favor, selecione as datas de início e fim.', 'warning');
+                return;
+            }
+            
+            const startDate = new Date(startDateInput + 'T00:00:00');
+            const endDate = new Date(endDateInput + 'T23:59:59');
+
+            const todasVendas = [
+                ...consumos.map(c => ({...c, tipo: 'Comanda'})),
+                ...vendasTicket.map(v => ({...v, tipo: 'Ticket'}))
+            ];
+
+            const vendasFiltradas = todasVendas.filter(v => {
+                const vendaDate = new Date(v.created_at);
+                return vendaDate >= startDate && vendaDate <= endDate;
+            });
+
+            let faturamentoTotal = 0;
+            let itensVendidos = 0;
+            const productSales = {};
+
+            vendasFiltradas.forEach(venda => {
+                faturamentoTotal += venda.valor_total;
+                itensVendidos += venda.quantidade;
+                
+                if(productSales[venda.produto_id]) {
+                    productSales[venda.produto_id] += venda.quantidade;
+                } else {
+                    productSales[venda.produto_id] = venda.quantidade;
+                }
+            });
+
+            document.getElementById('relatorio-faturamento').textContent = `R$ ${faturamentoTotal.toFixed(2)}`;
+            document.getElementById('relatorio-itens-vendidos').textContent = itensVendidos;
+            document.getElementById('relatorio-num-vendas').textContent = vendasFiltradas.length;
+
+            const topProdutosArray = Object.entries(productSales)
+                .sort(([,a],[,b]) => b - a)
+                .slice(0, 5);
+            
+            const topProdutosBody = document.getElementById('relatorio-top-produtos');
+            topProdutosBody.innerHTML = '';
+            if(topProdutosArray.length === 0){
+                topProdutosBody.innerHTML = '<tr><td colspan="2" class="text-center">Nenhuma venda no período.</td></tr>';
+            } else {
+                 topProdutosArray.forEach(([produtoId, quantidade]) => {
+                    const produto = produtos.find(p => p.id === parseInt(produtoId));
+                    topProdutosBody.innerHTML += `
+                        <tr>
+                            <td>${produto ? produto.nome : 'Produto Desconhecido'}</td>
+                            <td>${quantidade}</td>
+                        </tr>`;
+                });
+            }
+
+            const extratoBody = document.getElementById('relatorio-extrato-vendas');
+            extratoBody.innerHTML = '';
+             if(vendasFiltradas.length === 0){
+                extratoBody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhuma venda no período.</td></tr>';
+            } else {
+                vendasFiltradas.sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).forEach(venda => {
+                    const produto = produtos.find(p => p.id === venda.produto_id);
+                    let detalhe = '-';
+                    if(venda.tipo === 'Comanda') {
+                        const comanda = comandas.find(c => c.id === venda.comanda_id);
+                        detalhe = `Comanda ${comanda ? comanda.numero : 'N/A'}`;
+                    }
+                    extratoBody.innerHTML += `
+                        <tr>
+                            <td>${formatDate(venda.created_at)}</td>
+                            <td><span class="badge bg-${venda.tipo === 'Comanda' ? 'info' : 'danger'}">${venda.tipo}</span></td>
+                            <td>${produto ? produto.nome : 'N/A'}</td>
+                            <td>${venda.quantidade}</td>
+                            <td>R$ ${venda.valor_total.toFixed(2)}</td>
+                            <td>${detalhe}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('relatorio-results').style.display = 'block';
+        }
+
+        
+        document.getElementById('search-produto-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            renderProdutos(document.getElementById('search-produto-input').value);
+        });
+        document.getElementById('search-comanda-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            renderComandas(document.getElementById('search-comanda-input').value);
+        });
+        
+        // --- BLUETOOTH PRINTING ---
+        async function printViaBluetooth(textToPrint) {
+            if (!navigator.bluetooth) {
+                showAlert('A API de Web Bluetooth não é suportada neste navegador.', 'danger');
+                return;
+            }
+            
+            try {
+                showAlert('Procurando impressora Bluetooth...', 'info');
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] // Generic Attribute Profile
+                });
+
+                showAlert(`Conectando a ${device.name}...`, 'info');
+                const server = await device.gatt.connect();
+                
+                const services = await server.getPrimaryServices();
+                let printService = null;
+                for (const service of services) {
+                     const characteristics = await service.getCharacteristics();
+                     for(const characteristic of characteristics) {
+                        if (characteristic.properties.write || characteristic.properties.writeWithoutResponse) {
+                            printService = service;
+                            break;
+                        }
+                     }
+                     if (printService) break;
+                }
+                
+                if (!printService) {
+                    showAlert('Nenhum serviço de impressão encontrado no dispositivo.', 'danger');
+                    server.disconnect();
+                    return;
+                }
+
+                const characteristics = await printService.getCharacteristics();
+                let writeCharacteristic = null;
+                 for(const characteristic of characteristics) {
+                    if (characteristic.properties.write || characteristic.properties.writeWithoutResponse) {
+                        writeCharacteristic = characteristic;
+                        break;
+                    }
+                 }
+
+                if (!writeCharacteristic) {
+                    showAlert('Nenhuma característica de escrita encontrada.', 'danger');
+                    server.disconnect();
+                    return;
+                }
+                
+                showAlert('Enviando para a impressora...', 'info');
+                const encoder = new TextEncoder();
+                const data = encoder.encode(textToPrint + '\n\n\n');
+                
+                const chunkSize = 20;
+                for (let i = 0; i < data.length; i += chunkSize) {
+                    const chunk = data.slice(i, i + chunkSize);
+                    await writeCharacteristic.writeValue(chunk);
+                }
+
+                showAlert('Ticket impresso com sucesso!', 'success');
+                server.disconnect();
+
+            } catch (error) {
+                console.error('Erro na impressão Bluetooth:', error);
+                showAlert(`Erro na impressão: ${error.message}`, 'danger');
+            }
+        }
+        
+        // --- MODAL HELPERS ---
+        
+        document.querySelector('[data-bs-target="#produtoModal"]').addEventListener('click', () => {
+            document.getElementById('produtoModalLabel').textContent = 'Adicionar Produto';
+            document.getElementById('produto-form').reset();
+            document.getElementById('edit-produto-id').value = '';
+        });
+
+        document.querySelector('[data-bs-target="#comandaModal"]').addEventListener('click', () => {
+            document.getElementById('comandaModalLabel').textContent = 'Adicionar Comanda';
+            document.getElementById('comanda-form').reset();
+            document.getElementById('edit-comanda-id').value = '';
+        });
+        
+        document.querySelector('[data-bs-target="#userModal"]').addEventListener('click', () => {
+            document.getElementById('userModalLabel').textContent = 'Adicionar Usuário';
+            document.getElementById('user-form').reset();
+            document.getElementById('edit-user-id').value = '';
+            document.getElementById('user-password').placeholder = '';
+        });
+
+        function openEditProdutoModal(id) {
+            const produto = produtos.find(p => p.id === id);
+            document.getElementById('produtoModalLabel').textContent = `Editar Produto: ${produto.nome}`;
+            document.getElementById('edit-produto-id').value = produto.id;
+            document.getElementById('produto-nome').value = produto.nome;
+            document.getElementById('produto-preco').value = produto.preco;
+            document.getElementById('produto-estoque').value = produto.estoque;
+            produtoModal.show();
+        }
+
+        function openEditComandaModal(id) {
+            const comanda = comandas.find(c => c.id === id);
+            document.getElementById('comandaModalLabel').textContent = `Editar Comanda: ${comanda.numero}`;
+            document.getElementById('edit-comanda-id').value = comanda.id;
+            document.getElementById('comanda-numero').value = comanda.numero;
+            document.getElementById('comanda-cliente').value = comanda.cliente || '';
+            document.getElementById('comanda-saldo').value = comanda.saldo;
+            comandaModal.show();
+        }
+        
+        function openEditUserModal(id) {
+            const user = users.find(u => u.id === id);
+            document.getElementById('userModalLabel').textContent = `Editar Usuário: ${user.username}`;
+            document.getElementById('edit-user-id').value = user.id;
+            document.getElementById('user-username').value = user.username;
+            document.getElementById('user-role').value = user.role;
+            document.getElementById('user-password').value = '';
+            userModal.show();
+        }
+        
+        // --- INITIAL LOAD ---
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage('login');
+
+            // Register the service worker for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado com sucesso:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Falha ao registrar o Service Worker:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+
+</html>
+

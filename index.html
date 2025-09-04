@@ -588,22 +588,28 @@
 
     <script>
         // --- OFFLINE DATA STORE ---
-        let users = [
-            { id: 1, username: 'admin', password: 'admin', role: 'admin' },
-            { id: 2, username: 'user', password: 'user', role: 'user' }
-        ];
-        let produtos = [
-            { id: 1, nome: 'Coca-Cola 350ml', preco: 5.50, estoque: 48, updated_at: new Date().toISOString() },
-            { id: 2, nome: 'X-Salada Especial', preco: 22.00, estoque: 15, updated_at: new Date().toISOString() },
-            { id: 3, nome: 'Porção de Batata Frita (M)', preco: 18.00, estoque: 25, updated_at: new Date().toISOString() }
-        ];
-        let comandas = [
-            { id: 1, numero: 101, cliente: 'João Silva', saldo: 50.75, updated_at: new Date().toISOString() },
-            { id: 2, numero: 102, cliente: 'Mesa 04', saldo: 0.00, updated_at: new Date().toISOString() },
-            { id: 3, numero: 103, cliente: 'Maria', saldo: 120.00, updated_at: new Date().toISOString() }
-        ];
-        let consumos = [];
-        let vendasTicket = [];
+        
+        // Default data if nothing is in localStorage
+        const defaultData = {
+            users: [
+                { id: 1, username: 'admin', password: 'admin', role: 'admin' },
+                { id: 2, username: 'user', password: 'user', role: 'user' }
+            ],
+            produtos: [
+                { id: 1, nome: 'Coca-Cola 350ml', preco: 5.50, estoque: 48, updated_at: new Date().toISOString() },
+                { id: 2, nome: 'X-Salada Especial', preco: 22.00, estoque: 15, updated_at: new Date().toISOString() },
+                { id: 3, nome: 'Porção de Batata Frita (M)', preco: 18.00, estoque: 25, updated_at: new Date().toISOString() }
+            ],
+            comandas: [
+                { id: 1, numero: 101, cliente: 'João Silva', saldo: 50.75, updated_at: new Date().toISOString() },
+                { id: 2, numero: 102, cliente: 'Mesa 04', saldo: 0.00, updated_at: new Date().toISOString() },
+                { id: 3, numero: 103, cliente: 'Maria', saldo: 120.00, updated_at: new Date().toISOString() }
+            ],
+            consumos: [],
+            vendasTicket: []
+        };
+        
+        let users, produtos, comandas, consumos, vendasTicket;
         let currentUser = null;
         
         const userModal = new bootstrap.Modal(document.getElementById('userModal'));
@@ -635,6 +641,23 @@
             const day = date.getDate().toString().padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
+        
+        // --- DATA PERSISTENCE ---
+        function loadDataFromLocalStorage() {
+            users = JSON.parse(localStorage.getItem('conectFood_users')) || defaultData.users;
+            produtos = JSON.parse(localStorage.getItem('conectFood_produtos')) || defaultData.produtos;
+            comandas = JSON.parse(localStorage.getItem('conectFood_comandas')) || defaultData.comandas;
+            consumos = JSON.parse(localStorage.getItem('conectFood_consumos')) || defaultData.consumos;
+            vendasTicket = JSON.parse(localStorage.getItem('conectFood_vendasTicket')) || defaultData.vendasTicket;
+        }
+
+        function saveDataToLocalStorage() {
+            localStorage.setItem('conectFood_users', JSON.stringify(users));
+            localStorage.setItem('conectFood_produtos', JSON.stringify(produtos));
+            localStorage.setItem('conectFood_comandas', JSON.stringify(comandas));
+            localStorage.setItem('conectFood_consumos', JSON.stringify(consumos));
+            localStorage.setItem('conectFood_vendasTicket', JSON.stringify(vendasTicket));
+        }
 
 
         function showPage(pageId) {
@@ -662,6 +685,7 @@
 
             if (user) {
                 currentUser = user;
+                localStorage.setItem('conectFood_currentUser', JSON.stringify(currentUser));
                 document.querySelector('.navbar').style.display = 'flex';
                 document.getElementById('nav-username').textContent = `Olá, ${currentUser.username}`;
                 toggleAdminElements();
@@ -673,6 +697,7 @@
         });
 
         function logout() {
+            localStorage.removeItem('conectFood_currentUser');
             currentUser = null;
             document.querySelector('.navbar').style.display = 'none';
             showPage('login');
@@ -844,6 +869,7 @@
                 produtos.push(newProduto);
                 showAlert('Produto adicionado!');
             }
+            saveDataToLocalStorage();
             renderProdutos();
             produtoModal.hide();
         });
@@ -874,6 +900,7 @@
                 comandas.push(newComanda);
                 showAlert('Comanda adicionada!');
             }
+            saveDataToLocalStorage();
             renderComandas();
             comandaModal.hide();
         });
@@ -911,6 +938,7 @@
                 users.push(newUser);
                 showAlert('Usuário adicionado!');
             }
+            saveDataToLocalStorage();
             renderUsers();
             userModal.hide();
         });
@@ -956,6 +984,7 @@
             consumos.push(consumo);
             
             showAlert('Consumo registrado!');
+            saveDataToLocalStorage();
             this.reset();
             renderConsumoPage(); // Refresh selects and table
         });
@@ -1006,6 +1035,7 @@ Obrigado!
             printViaBluetooth(ticketText);
             
             showAlert('Venda registrada e ticket enviado para impressão!');
+            saveDataToLocalStorage();
             this.reset();
             renderVendaTicketPage();
         });
@@ -1029,6 +1059,7 @@ Obrigado!
                 users = users.filter(u => u.id !== id);
                 renderUsers();
             }
+            saveDataToLocalStorage();
             showAlert('Item deletado!');
         }
         
@@ -1254,7 +1285,19 @@ Obrigado!
         // --- INITIAL LOAD ---
         
         document.addEventListener('DOMContentLoaded', () => {
-            showPage('login');
+            loadDataFromLocalStorage();
+            
+            // Tenta carregar o usuário da sessão
+            const savedUser = localStorage.getItem('conectFood_currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                document.querySelector('.navbar').style.display = 'flex';
+                document.getElementById('nav-username').textContent = `Olá, ${currentUser.username}`;
+                toggleAdminElements();
+                showPage('home');
+            } else {
+                showPage('login');
+            }
 
             // Register the service worker for PWA
             if ('serviceWorker' in navigator) {
